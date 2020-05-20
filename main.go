@@ -10,12 +10,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/forwardauth"
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/httphandler"
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
-	"github.com/coreos/go-oidc"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 )
 
 func init() {
@@ -41,32 +40,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	provider, err := oidc.NewProvider(ctx, options.Issuer)
-	if err != nil {
-		panic(err)
-	}
-
 	// Configure an OpenID Connect aware OAuth2 client.
-	oauth2Config := oauth2.Config{
-		ClientID:     options.ClientID,
-		ClientSecret: options.ClientSecret,
-		RedirectURL:  fmt.Sprintf("%s/%s", options.AuthDomain, options.RedirectURL),
-
-		// Discovery returns the OAuth2 endpoints.
-		Endpoint: provider.Endpoint(),
-
-		// "openid" is a required scope for OpenID Connect flows.
-		Scopes: []string{oidc.ScopeOpenID, "profile", "email"},
+	fw, err := forwardauth.Create(ctx, options)
+	if err != nil {
+		logrus.Errorf("failed to create forward auth client: %s", err)
 	}
-
-	oidcConfig := &oidc.Config{
-		ClientID: options.ClientID,
-	}
-	verifier := provider.Verifier(oidcConfig)
 
 	// http handler
 	state := uuid.New().String()
-	http.HandleFunc("/", httphandler.RootHandler(ctx, state, oauth2Config, verifier))
-	http.HandleFunc(fmt.Sprintf("/%s", options.RedirectURL), httphandler.CallbackHandler(ctx, state, oauth2Config, verifier))
+	http.HandleFunc("/", httphandler.RootHandler(ctx, state, fw))
+	http.HandleFunc(fmt.Sprintf("/%s", options.RedirectURL), httphandler.CallbackHandler(ctx, state, fw))
 	http.ListenAndServe(options.BindAddress, nil)
 }

@@ -10,19 +10,19 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/coreos/go-oidc"
+	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/forwardauth"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 )
 
-func CallbackHandler(ctx context.Context, state string, oauth2Config oauth2.Config, verifier *oidc.IDTokenVerifier) func(http.ResponseWriter, *http.Request) {
+// CallbackHandler returns a handler function which handles the callback from oidc provider
+func CallbackHandler(ctx context.Context, state string, fw *forwardauth.ForwardAuth) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("state") != state {
 			http.Error(w, "state did not match", http.StatusBadRequest)
 			return
 		}
 
-		oauth2Token, err := oauth2Config.Exchange(ctx, r.URL.Query().Get("code"))
+		oauth2Token, err := fw.OAuth2Config.Exchange(ctx, r.URL.Query().Get("code"))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -34,7 +34,7 @@ func CallbackHandler(ctx context.Context, state string, oauth2Config oauth2.Conf
 			return
 		}
 
-		idToken, err := verifier.Verify(ctx, rawIDToken)
+		idToken, err := fw.OidcVefifier.Verify(ctx, rawIDToken)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -60,11 +60,12 @@ func CallbackHandler(ctx context.Context, state string, oauth2Config oauth2.Conf
 	}
 }
 
-func RootHandler(ctx context.Context, state string, oauth2Config oauth2.Config, verifier *oidc.IDTokenVerifier) func(http.ResponseWriter, *http.Request) {
+// RootHandler returns a handler function which handles all requests to the root
+func RootHandler(ctx context.Context, state string, fw *forwardauth.ForwardAuth) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rawAccessToken := r.Header.Get("Authorization")
 		if rawAccessToken == "" {
-			http.Redirect(w, r, oauth2Config.AuthCodeURL(state), http.StatusFound)
+			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
 			return
 		}
 
@@ -74,10 +75,10 @@ func RootHandler(ctx context.Context, state string, oauth2Config oauth2.Config, 
 			return
 		}
 
-		_, err := verifier.Verify(ctx, parts[1])
+		_, err := fw.OidcVefifier.Verify(ctx, parts[1])
 		if err != nil {
 			logrus.Debug(err)
-			http.Redirect(w, r, oauth2Config.AuthCodeURL(state), http.StatusFound)
+			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
 			return
 		}
 
