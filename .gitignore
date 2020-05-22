@@ -1,2 +1,3 @@
 keycloak-traefik-forward-auth
 __debug_bin
+prepare_env.sh

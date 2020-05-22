@@ -12,12 +12,12 @@
             "program": "${workspaceRoot}",
             "env": {
                 //"HTTP_PROXY": "http://127.0.0.1:8080",
-                "AUTH_DOMAIN": "http://127.0.0.1:4712",
+                "AUTH_DOMAIN": "localhost",
+                "PORT": "4712",
                 "ISSUER": "https://sso.stivik.de/auth/realms/master",
                 "CLIENT_ID": "traefik-internal",
                 "CLIENT_SECRET": "fe7793cc-d59d-4f1f-af22-ef8f0e1e4daf",
                 "REDIRECT_URL": "_oauth/callack",
-                "BIND_ADDRESS": ":4712",
                 "LOG_LEVEL": "DEBUG"
             },
             "args": []

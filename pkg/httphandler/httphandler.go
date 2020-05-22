@@ -6,82 +6,54 @@ package httphandler
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/forwardauth"
+	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // CallbackHandler returns a handler function which handles the callback from oidc provider
-func CallbackHandler(ctx context.Context, state string, fw *forwardauth.ForwardAuth) func(http.ResponseWriter, *http.Request) {
+func CallbackHandler(ctx context.Context, fw *forwardauth.ForwardAuth) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("state") != state {
-			http.Error(w, "state did not match", http.StatusBadRequest)
-			return
-		}
-
-		oauth2Token, err := fw.OAuth2Config.Exchange(ctx, r.URL.Query().Get("code"))
+		// check for the csrf cookie
+		state, redirect, err := fw.ValidateCSRFCookie(r)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
-		rawIDToken, ok := oauth2Token.Extra("id_token").(string)
-		if !ok {
-			http.Error(w, "No id_token field in oauth2 token.", http.StatusInternalServerError)
-			return
-		}
-
-		idToken, err := fw.OidcVefifier.Verify(ctx, rawIDToken)
+		// handle the authentication
+		_, err, statusCode := fw.HandleAuthentication(ctx, w, r, state)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), statusCode)
 			return
 		}
 
-		resp := struct {
-			IDToken       string
-			RefreshToken  string
-			IDTokenClaims *json.RawMessage // ID Token payload is just JSON.
-		}{rawIDToken, oauth2Token.RefreshToken, new(json.RawMessage)}
-
-		if err := idToken.Claims(&resp.IDTokenClaims); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		data, err := json.Marshal(resp)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Write(data)
+		http.Redirect(w, r, redirect, http.StatusTemporaryRedirect)
 	}
 }
 
 // RootHandler returns a handler function which handles all requests to the root
-func RootHandler(ctx context.Context, state string, fw *forwardauth.ForwardAuth) func(http.ResponseWriter, *http.Request) {
+func RootHandler(ctx context.Context, fw *forwardauth.ForwardAuth, options *options.Options) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rawAccessToken := r.Header.Get("Authorization")
-		if rawAccessToken == "" {
-			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
-			return
-		}
-
-		parts := strings.Split(rawAccessToken, " ")
-		if len(parts) != 2 {
-			w.WriteHeader(400)
-			return
-		}
-
-		_, err := fw.OidcVefifier.Verify(ctx, parts[1])
+		state, _, err := fw.ValidateCSRFCookie(r)
 		if err != nil {
-			logrus.Debug(err)
+			state = uuid.New().String()
+			http.SetCookie(w, fw.MakeCSRFCookie(w, options, state))
 			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
 			return
 		}
 
-		w.Write([]byte("hello world"))
+		_, err = fw.IsAuthenticated(ctx, state)
+		if err != nil {
+			logrus.Error(err.Error())
+			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
+			return
+		}
+
+		w.Header().Set("X-Forwarded-User", "")
+		w.WriteHeader(200)
 	}
 }
