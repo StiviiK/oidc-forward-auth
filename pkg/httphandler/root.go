@@ -33,6 +33,6 @@ func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, for
 		return
 	}
 
-	w.Header().Set("X-Forwarded-User", claims.EMail)
+	w.Header().Set("X-Forwarded-User", claims.Email)
 	w.WriteHeader(200)
 }

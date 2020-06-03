@@ -23,16 +23,19 @@ type ForwardAuth struct {
 
 // Claims represents the claims struct which we get from the identity provider
 type Claims struct {
-	Expiration       utils.Time `json:"exp"`
-	IssuedAt         utils.Time `json:"iat"`
-	Issuer           string     `json:"iss"`
-	Audience         string     `json:"aud"`
-	VerifiedMail     bool       `json:"email_verified"`
-	Name             string     `json:"name"`
-	PreferedUsername string     `json:"preferred_username"`
-	GivenName        string     `json:"given_name"`
-	FamilyName       string     `json:"family_name"`
-	EMail            string     `json:"email"`
+	Issuer     string     `json:"iss"`
+	Audience   string     `json:"aud"`
+	IssuedAt   utils.Time `json:"iat"`
+	Expiration utils.Time `json:"exp"`
+
+	Name             string `json:"name"`
+	GivenName        string `json:"given_name"`
+	FamilyName       string `json:"family_name"`
+	Email            string `json:"email"`
+	VerifiedMail     bool   `json:"email_verified"`
+	Picture          string `json:"picture"`
+	Locale           string `json:"locale"`
+	PreferedUsername string `json:"preferred_username"`
 }
 
 // Create creates a new fw auth client from our options
