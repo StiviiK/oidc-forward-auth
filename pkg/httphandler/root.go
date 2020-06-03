@@ -21,11 +21,11 @@ func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, for
 		logger.Warn("IsAuthenticated failed, initating login flow.")
 
 		http.SetCookie(w, root.forwardAuth.ClearAuthCookie(root.options))
-		http.SetCookie(w, root.forwardAuth.ClearRefreshAuthCookie(root.options))
+		//http.SetCookie(w, root.forwardAuth.ClearRefreshAuthCookie(root.options))
 
 		state := uuid.New().String()
 		http.SetCookie(w, root.forwardAuth.MakeCSRFCookie(w, r, root.options, state))
-		http.Redirect(w, r, root.forwardAuth.OAuth2Config.AuthCodeURL(state), http.StatusTemporaryRedirect)
+		//http.Redirect(w, r, root.forwardAuth.OAuth2Config.AuthCodeURL(state), http.StatusTemporaryRedirect)
 		return
 	}
 

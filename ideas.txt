@@ -1,6 +1,0 @@
-Ideas:
-    - Save Access Token and Refresh Token in Cache (Redis?)
-    - Save guid (state), which is the index for the tokens in the cache, as cookie
-    - Every request verify if access token is valid, otherwise request new one
-        - Success, all fine
-        - Failure, redirect to logins
