@@ -54,12 +54,11 @@ func main() {
 	}
 
 	// http handler
-	mux := http.ServeMux{}
-	mux.HandleFunc("/", httphandler.RootHandler(fw, options))
-	mux.HandleFunc(fmt.Sprintf("/%s", options.RedirectURL), httphandler.CallbackHandler(fw, options))
+	httpHandler := httphandler.Create(fw, options)
+	http.HandleFunc("/", httpHandler.Entrypoint())
 
 	logrus.Infof("Listening on %d", options.Port)
-	logrus.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", options.Port), &mux))
+	logrus.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", options.Port), nil))
 }
 
 func checkOptions(options *options.Options) error {

@@ -47,7 +47,7 @@ func Create(ctx context.Context, options *options.Options) (*ForwardAuth, error)
 		OAuth2Config: oauth2.Config{
 			ClientID:     options.ClientID,
 			ClientSecret: options.ClientSecret,
-			RedirectURL:  fmt.Sprintf("http://%s:%d/%s", options.AuthDomain, options.Port, options.RedirectURL),
+			RedirectURL:  fmt.Sprintf("https://%s%s", options.AuthDomain, options.RedirectURL),
 
 			// Discovery returns the OAuth2 endpoints.
 			Endpoint: provider.Endpoint(),

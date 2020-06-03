@@ -1,10 +1,10 @@
 package forwardauth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
 	"github.com/sirupsen/logrus"
@@ -16,17 +16,17 @@ type AuthenticatationResult struct {
 	IDTokenClaims *json.RawMessage
 }
 
-func (fw *ForwardAuth) HandleAuthentication(logger *logrus.Entry, r *http.Request, state string) (*AuthenticatationResult, error) {
+func (fw *ForwardAuth) HandleAuthentication(ctx context.Context, logger *logrus.Entry, state string, code string) (*AuthenticatationResult, error) {
 	var result AuthenticatationResult
 	logger = logger.WithField("FunctionSource", "HandleAuthentication")
 
-	oauth2Token, err := fw.OAuth2Config.Exchange(r.Context(), r.URL.Query().Get("code"))
+	oauth2Token, err := fw.OAuth2Config.Exchange(ctx, code)
 	if err != nil {
 		logger.Error(err.Error())
 		return &result, err
 	}
 
-	result, err = fw.VerifyToken(r.Context(), oauth2Token)
+	result, err = fw.VerifyToken(ctx, oauth2Token)
 	if err != nil {
 		logger.Error(err.Error())
 		return &result, err
@@ -36,7 +36,7 @@ func (fw *ForwardAuth) HandleAuthentication(logger *logrus.Entry, r *http.Reques
 	return &result, nil
 }
 
-func (fw *ForwardAuth) IsAuthenticated(logger *logrus.Entry, w http.ResponseWriter, r *http.Request, options *options.Options) (*Claims, error) {
+func (fw *ForwardAuth) IsAuthenticated(context context.Context, logger *logrus.Entry, w http.ResponseWriter, r *http.Request, options *options.Options) (*Claims, error) {
 	var claims Claims
 	logger = logger.WithField("FunctionSource", "IsAuthenticated")
 
@@ -48,7 +48,7 @@ func (fw *ForwardAuth) IsAuthenticated(logger *logrus.Entry, w http.ResponseWrit
 	}
 
 	// check if the token is valid
-	idToken, err := fw.OidcVefifier.Verify(r.Context(), cookie.Value)
+	idToken, err := fw.OidcVefifier.Verify(context, cookie.Value)
 
 	switch {
 	case err == nil: // Token is valid
@@ -62,33 +62,36 @@ func (fw *ForwardAuth) IsAuthenticated(logger *logrus.Entry, w http.ResponseWrit
 
 		return &claims, nil
 
-	case strings.Contains(err.Error(), "expired"): // Token is expired
-		logger.Info("Received expired token, trying to refesh it.")
+		// Todo: Updating the cookies does sadly not work here
+		/*
+			case strings.Contains(err.Error(), "expired"): // Token is expired
+				logger.Info("Received expired token, trying to refesh it.")
 
-		refreshCookie, err := fw.GetRefreshAuthCookie(r)
-		if err != nil {
-			logger.Error(err.Error())
-			return &claims, err
-		}
+				refreshCookie, err := fw.GetRefreshAuthCookie(r)
+				if err != nil {
+					logger.Error(err.Error())
+					return &claims, err
+				}
 
-		result, err := fw.RefreshToken(r.Context(), refreshCookie.Value)
-		if err != nil {
-			logger.Error(err.Error())
-			return &claims, err
-		}
+				result, err := fw.RefreshToken(context, refreshCookie.Value)
+				if err != nil {
+					logger.Error(err.Error())
+					return &claims, err
+				}
 
-		http.SetCookie(w, fw.MakeAuthCookie(r, options, result))
-		if len(result.RefreshToken) > 0 { // Do we have an refresh token?
-			http.SetCookie(w, fw.MakeRefreshAuthCookie(r, options, result))
-		}
+				http.SetCookie(w, fw.MakeAuthCookie(options, result))
+				if len(result.RefreshToken) > 0 { // Do we have an refresh token?
+					http.SetCookie(w, fw.MakeRefreshAuthCookie(options, result))
+				}
 
-		err = json.Unmarshal(*result.IDTokenClaims, &claims)
-		if err != nil {
-			logger.Error(err.Error())
-			return &claims, err
-		}
+				err = json.Unmarshal(*result.IDTokenClaims, &claims)
+				if err != nil {
+					logger.Error(err.Error())
+					return &claims, err
+				}
 
-		return &claims, nil
+				return &claims, nil
+		*/
 
 	case err != nil: // Other error
 		logger.Error(err.Error())

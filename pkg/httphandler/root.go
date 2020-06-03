@@ -2,37 +2,34 @@ package httphandler
 
 import (
 	"net/http"
+	"net/url"
 
-	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/forwardauth"
-	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
 // RootHandler returns a handler function which handles all requests to the root
-func RootHandler(fw *forwardauth.ForwardAuth, options *options.Options) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		logger := logrus.WithFields(logrus.Fields{
-			"SourceIP": r.Header.Get("X-Forwarded-For"),
-			"Path":     r.URL.Path,
-		})
+func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
+	logger := logrus.WithFields(logrus.Fields{
+		"SourceIP": r.Header.Get("X-Forwarded-For"),
+		"Path":     forwardedURI.Path,
+	})
 
-		claims, err := fw.IsAuthenticated(logger, w, r, options)
-		if err != nil {
-			logger = logger.WithField("FunctionSource", "RootHandler")
-			logger.Warn("IsAuthenticated failed, initating login flow.")
+	claims, err := root.forwardAuth.IsAuthenticated(r.Context(), logger, w, r, root.options)
+	if err != nil {
+		logger = logger.WithField("FunctionSource", "RootHandler")
+		logger.Warn("IsAuthenticated failed, initating login flow.")
 
-			http.SetCookie(w, fw.ClearAuthCookie(options))
-			http.SetCookie(w, fw.ClearRefreshAuthCookie(options))
+		http.SetCookie(w, root.forwardAuth.ClearAuthCookie(root.options))
+		http.SetCookie(w, root.forwardAuth.ClearRefreshAuthCookie(root.options))
 
-			state := uuid.New().String()
-			http.SetCookie(w, fw.MakeCSRFCookie(w, r, options, state))
-			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
-			return
-		}
-
-		w.Header().Set("X-Forwarded-User", claims.EMail)
-		w.WriteHeader(200)
-		w.Write([]byte(claims.Expiration.Time().Local().String()))
+		state := uuid.New().String()
+		http.SetCookie(w, root.forwardAuth.MakeCSRFCookie(w, r, root.options, state))
+		http.Redirect(w, r, root.forwardAuth.OAuth2Config.AuthCodeURL(state), http.StatusTemporaryRedirect)
+		return
 	}
+
+	w.Header().Set("X-Forwarded-User", claims.EMail)
+	w.WriteHeader(200)
+	w.Write([]byte(claims.Expiration.Time().Local().String()))
 }

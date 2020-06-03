@@ -23,7 +23,7 @@ func getBaseCookie(options *options.Options) *http.Cookie {
 func (fw *ForwardAuth) MakeCSRFCookie(w http.ResponseWriter, r *http.Request, options *options.Options, state string) *http.Cookie {
 	cookie := getBaseCookie(options)
 	cookie.Name = "__auth_csrf"
-	cookie.Value = fmt.Sprintf("%s|%s", "//google.de", state)
+	cookie.Value = fmt.Sprintf("%s|%s", fw.GetReturnUri(r), state)
 	cookie.Expires = time.Now().Local().Add(time.Hour)
 
 	return cookie
@@ -60,7 +60,7 @@ func (fw *ForwardAuth) ClearCSRFCookie(options *options.Options) *http.Cookie {
 	return cookie
 }
 
-func (fw *ForwardAuth) MakeAuthCookie(r *http.Request, options *options.Options, authResult *AuthenticatationResult) *http.Cookie {
+func (fw *ForwardAuth) MakeAuthCookie(options *options.Options, authResult *AuthenticatationResult) *http.Cookie {
 	cookie := getBaseCookie(options)
 	cookie.Name = "__auth"
 	cookie.Value = authResult.IDToken
@@ -81,7 +81,7 @@ func (fw *ForwardAuth) ClearAuthCookie(options *options.Options) *http.Cookie {
 	return cookie
 }
 
-func (fw *ForwardAuth) MakeRefreshAuthCookie(r *http.Request, options *options.Options, authResult *AuthenticatationResult) *http.Cookie {
+func (fw *ForwardAuth) MakeRefreshAuthCookie(options *options.Options, authResult *AuthenticatationResult) *http.Cookie {
 	cookie := getBaseCookie(options)
 	cookie.Name = "__auth_refresh"
 	cookie.Value = authResult.RefreshToken
