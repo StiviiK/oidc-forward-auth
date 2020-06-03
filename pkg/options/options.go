@@ -12,6 +12,7 @@ import (
 
 type Options struct {
 	AuthDomain   string `env:"AUTH_DOMAIN"`
+	CookieDomain string `env:"COOKIE_DOMAIN"`
 	Port         int    `env:"PORT"`
 	Issuer       string `env:"ISSUER"`
 	ClientID     string `env:"CLIENT_ID"`

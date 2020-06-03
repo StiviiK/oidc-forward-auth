@@ -14,7 +14,7 @@ import (
 func getBaseCookie(options *options.Options) *http.Cookie {
 	return &http.Cookie{
 		Path:     "/",
-		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
+		Domain:   options.CookieDomain,
 		HttpOnly: true,
 		Secure:   false,
 	}

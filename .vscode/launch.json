@@ -13,6 +13,7 @@
             "env": {
                 //"HTTP_PROXY": "http://127.0.0.1:8080",
                 "AUTH_DOMAIN": "localhost",
+                "COOKIE_DOMAIN": "localhost",
                 "PORT": "4712",
                 "ISSUER": "https://sso.stivik.de/auth/realms/master",
                 "CLIENT_ID": "traefik-internal",
@@ -31,6 +32,7 @@
             "env": {
                 //"HTTP_PROXY": "http://127.0.0.1:8080",
                 "AUTH_DOMAIN": "localhost",
+                "COOKIE_DOMAIN": "localhost",
                 "PORT": "4712",
                 "ISSUER": "https://accounts.google.com",
                 "CLIENT_ID": "929787040723-54tnrchh8r2bt12fmt3rvs058b7r67dl.apps.googleusercontent.com",
