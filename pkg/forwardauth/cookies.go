@@ -11,20 +11,26 @@ import (
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
 )
 
-func (fw *ForwardAuth) MakeCSRFCookie(w http.ResponseWriter, r *http.Request, options *options.Options, state string) *http.Cookie {
+func getBaseCookie(options *options.Options) *http.Cookie {
 	return &http.Cookie{
-		Name:     "_forward_auth_csrf",
-		Value:    fmt.Sprintf("%s|%s", "//google.de", state),
 		Path:     "/",
 		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
 		HttpOnly: true,
 		Secure:   false,
-		Expires:  time.Now().Local().Add(time.Hour),
 	}
 }
 
+func (fw *ForwardAuth) MakeCSRFCookie(w http.ResponseWriter, r *http.Request, options *options.Options, state string) *http.Cookie {
+	cookie := getBaseCookie(options)
+	cookie.Name = "__auth_csrf"
+	cookie.Value = fmt.Sprintf("%s|%s", "//google.de", state)
+	cookie.Expires = time.Now().Local().Add(time.Hour)
+
+	return cookie
+}
+
 func (fw *ForwardAuth) ValidateCSRFCookie(r *http.Request) (state string, redirect string, error error) {
-	csrfCookie, err := r.Cookie("_forward_auth_csrf")
+	csrfCookie, err := r.Cookie("__auth_csrf")
 	if err != nil {
 		return "", "", errors.New("Missing csrf cookie")
 	}
@@ -47,27 +53,20 @@ func (fw *ForwardAuth) ValidateCSRFCookie(r *http.Request) (state string, redire
 }
 
 func (fw *ForwardAuth) ClearCSRFCookie(options *options.Options) *http.Cookie {
-	return &http.Cookie{
-		Name:     "_forward_auth_csrf",
-		Value:    "",
-		Path:     "/",
-		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
-		HttpOnly: true,
-		Secure:   false,
-		Expires:  time.Now().Local().Add(time.Hour * -1),
-	}
+	cookie := getBaseCookie(options)
+	cookie.Name = "__auth_csrf"
+	cookie.Expires = time.Now().Local().Add(time.Hour * -1)
+
+	return cookie
 }
 
 func (fw *ForwardAuth) MakeAuthCookie(r *http.Request, options *options.Options, authResult *AuthenticatationResult) *http.Cookie {
-	return &http.Cookie{
-		Name:     "__auth",
-		Value:    authResult.IDToken,
-		Path:     "/",
-		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
-		HttpOnly: true,
-		Secure:   false,
-		Expires:  time.Now().Local().Add(time.Hour * 24),
-	}
+	cookie := getBaseCookie(options)
+	cookie.Name = "__auth"
+	cookie.Value = authResult.IDToken
+	cookie.Expires = time.Now().Local().Add(time.Hour * 24)
+
+	return cookie
 }
 
 func (fw *ForwardAuth) GetAuthCookie(r *http.Request) (*http.Cookie, error) {
@@ -75,37 +74,26 @@ func (fw *ForwardAuth) GetAuthCookie(r *http.Request) (*http.Cookie, error) {
 }
 
 func (fw *ForwardAuth) ClearAuthCookie(options *options.Options) *http.Cookie {
-	return &http.Cookie{
-		Name:     "__auth",
-		Value:    "",
-		Path:     "/",
-		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
-		HttpOnly: true,
-		Secure:   false,
-		Expires:  time.Now().Local().Add(time.Hour * -1),
-	}
+	cookie := getBaseCookie(options)
+	cookie.Name = "__auth"
+	cookie.Expires = time.Now().Local().Add(time.Hour * -1)
+
+	return cookie
 }
 
 func (fw *ForwardAuth) MakeRefreshAuthCookie(r *http.Request, options *options.Options, authResult *AuthenticatationResult) *http.Cookie {
-	return &http.Cookie{
-		Name:     "__auth_refresh",
-		Value:    authResult.RefreshToken,
-		Path:     "/",
-		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
-		HttpOnly: true,
-		Secure:   false,
-		Expires:  time.Now().Local().Add(time.Hour * 24),
-	}
+	cookie := getBaseCookie(options)
+	cookie.Name = "__auth_refresh"
+	cookie.Value = authResult.RefreshToken
+	cookie.Expires = time.Now().Local().Add(time.Hour * 24)
+
+	return cookie
 }
 
 func (fw *ForwardAuth) ClearRefreshAuthCookie(options *options.Options) *http.Cookie {
-	return &http.Cookie{
-		Name:     "__auth_refresh",
-		Value:    "",
-		Path:     "/",
-		Domain:   fmt.Sprintf("http://%s:%d", options.AuthDomain, options.Port),
-		HttpOnly: true,
-		Secure:   false,
-		Expires:  time.Now().Local().Add(time.Hour * -1),
-	}
+	cookie := getBaseCookie(options)
+	cookie.Name = "__auth_refresh"
+	cookie.Expires = time.Now().Local().Add(time.Hour * -1)
+
+	return cookie
 }
