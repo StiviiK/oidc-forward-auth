@@ -20,7 +20,7 @@ func getBaseCookie(options *options.Options) *http.Cookie {
 		Path:     "/",
 		Domain:   options.CookieDomain,
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   true,
 	}
 }
 
