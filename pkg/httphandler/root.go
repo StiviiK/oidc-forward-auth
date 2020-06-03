@@ -25,7 +25,7 @@ func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, for
 
 		state := uuid.New().String()
 		http.SetCookie(w, root.forwardAuth.MakeCSRFCookie(w, r, root.options, state))
-		//http.Redirect(w, r, root.forwardAuth.OAuth2Config.AuthCodeURL(state), http.StatusTemporaryRedirect)
+		http.Redirect(w, r, root.forwardAuth.OAuth2Config.AuthCodeURL(state), http.StatusTemporaryRedirect)
 		return
 	}
 
