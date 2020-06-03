@@ -47,4 +47,15 @@ COPY --from=builder /go/bin/oidc-forward-auth /go/bin/oidc-forward-auth
 # Use an unprivileged user.
 USER appuser:appuser
 
+# Set labels
+# Now we DO need these, for the auto-labeling of the image
+ARG BUILD_DATE
+ARG VCS_REF
+
+# Good docker practice, plus we get microbadger badges
+LABEL org.label-schema.build-date=$BUILD_DATE \
+      org.label-schema.vcs-url="https://github.com/StiviiK/oidc-forward-auth.git" \
+      org.label-schema.vcs-ref=$VCS_REF \
+      org.label-schema.schema-version="1.0"
+
 ENTRYPOINT ["/go/bin/oidc-forward-auth"]
