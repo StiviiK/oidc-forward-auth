@@ -90,6 +90,10 @@ func (fw *ForwardAuth) MakeRefreshAuthCookie(r *http.Request, options *options.O
 	return cookie
 }
 
+func (fw *ForwardAuth) GetRefreshAuthCookie(r *http.Request) (*http.Cookie, error) {
+	return r.Cookie("__auth_refresh")
+}
+
 func (fw *ForwardAuth) ClearRefreshAuthCookie(options *options.Options) *http.Cookie {
 	cookie := getBaseCookie(options)
 	cookie.Name = "__auth_refresh"

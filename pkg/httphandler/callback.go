@@ -5,11 +5,17 @@ import (
 
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/forwardauth"
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
+	"github.com/sirupsen/logrus"
 )
 
 // CallbackHandler returns a handler function which handles the callback from oidc provider
 func CallbackHandler(fw *forwardauth.ForwardAuth, options *options.Options) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger := logrus.WithFields(logrus.Fields{
+			"SourceIP": r.Header.Get("X-Forwarded-For"),
+			"Path":     r.URL.Path,
+		})
+
 		// check for the csrf cookie
 		state, _, err := fw.ValidateCSRFCookie(r)
 		if err != nil {
@@ -24,7 +30,7 @@ func CallbackHandler(fw *forwardauth.ForwardAuth, options *options.Options) func
 		}
 
 		// handle the authentication
-		authResult, err := fw.HandleAuthentication(r, state)
+		authResult, err := fw.HandleAuthentication(logger, r, state)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

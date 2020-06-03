@@ -1,20 +1,27 @@
 package httphandler
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/forwardauth"
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
 	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // RootHandler returns a handler function which handles all requests to the root
 func RootHandler(fw *forwardauth.ForwardAuth, options *options.Options) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		result, err := fw.IsAuthenticated(r)
+		logger := logrus.WithFields(logrus.Fields{
+			"SourceIP": r.Header.Get("X-Forwarded-For"),
+			"Path":     r.URL.Path,
+		})
+
+		claims, err := fw.IsAuthenticated(logger, w, r, options)
 		if err != nil {
+			logger = logger.WithField("FunctionSource", "RootHandler")
+			logger.Warn("IsAuthenticated failed, initating login flow.")
+
 			http.SetCookie(w, fw.ClearAuthCookie(options))
 			http.SetCookie(w, fw.ClearRefreshAuthCookie(options))
 
@@ -22,12 +29,6 @@ func RootHandler(fw *forwardauth.ForwardAuth, options *options.Options) func(htt
 			http.SetCookie(w, fw.MakeCSRFCookie(w, r, options, state))
 			http.Redirect(w, r, fw.OAuth2Config.AuthCodeURL(state), http.StatusFound)
 			return
-		}
-
-		claims := forwardauth.Claims{}
-		err = json.Unmarshal(*result.IDTokenClaims, &claims)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to read claims, %s", err), http.StatusInternalServerError)
 		}
 
 		w.Header().Set("X-Forwarded-User", claims.EMail)
