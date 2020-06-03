@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2020 Stefan Kürzeder <info@stivik.de>
+This code is licensed under MIT license (see LICENSE for details)
+*/
 package httphandler
 
 import (

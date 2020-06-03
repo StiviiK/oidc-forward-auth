@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2020 Stefan Kürzeder <info@stivik.de>
+This code is licensed under MIT license (see LICENSE for details)
+*/
 package forwardauth
 
 import (
@@ -5,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/StiviiK/keycloak-traefik-forward-auth/pkg/options"
 	"github.com/sirupsen/logrus"
@@ -63,35 +68,33 @@ func (fw *ForwardAuth) IsAuthenticated(context context.Context, logger *logrus.E
 		return &claims, nil
 
 		// Todo: Updating the cookies does sadly not work here
-		/*
-			case strings.Contains(err.Error(), "expired"): // Token is expired
-				logger.Info("Received expired token, trying to refesh it.")
+	case strings.Contains(err.Error(), "expired"): // Token is expired
+		logger.Info("Received expired token, trying to refesh it.")
 
-				refreshCookie, err := fw.GetRefreshAuthCookie(r)
-				if err != nil {
-					logger.Error(err.Error())
-					return &claims, err
-				}
+		refreshCookie, err := fw.GetRefreshAuthCookie(r)
+		if err != nil {
+			logger.Error(err.Error())
+			return &claims, err
+		}
 
-				result, err := fw.RefreshToken(context, refreshCookie.Value)
-				if err != nil {
-					logger.Error(err.Error())
-					return &claims, err
-				}
+		result, err := fw.RefreshToken(context, refreshCookie.Value)
+		if err != nil {
+			logger.Error(err.Error())
+			return &claims, err
+		}
 
-				http.SetCookie(w, fw.MakeAuthCookie(options, result))
-				if len(result.RefreshToken) > 0 { // Do we have an refresh token?
-					http.SetCookie(w, fw.MakeRefreshAuthCookie(options, result))
-				}
+		http.SetCookie(w, fw.MakeAuthCookie(options, result))
+		if len(result.RefreshToken) > 0 { // Do we have an refresh token?
+			http.SetCookie(w, fw.MakeRefreshAuthCookie(options, result))
+		}
 
-				err = json.Unmarshal(*result.IDTokenClaims, &claims)
-				if err != nil {
-					logger.Error(err.Error())
-					return &claims, err
-				}
+		err = json.Unmarshal(*result.IDTokenClaims, &claims)
+		if err != nil {
+			logger.Error(err.Error())
+			return &claims, err
+		}
 
-				return &claims, nil
-		*/
+		return &claims, nil
 
 	case err != nil: // Other error
 		logger.Error(err.Error())

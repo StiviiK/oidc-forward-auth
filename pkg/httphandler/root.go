@@ -1,3 +1,7 @@
+/*
+Copyright (c) 2020 Stefan Kürzeder <info@stivik.de>
+This code is licensed under MIT license (see LICENSE for details)
+*/
 package httphandler
 
 import (
@@ -31,5 +35,4 @@ func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, for
 
 	w.Header().Set("X-Forwarded-User", claims.EMail)
 	w.WriteHeader(200)
-	w.Write([]byte(claims.Expiration.Time().Local().String()))
 }
