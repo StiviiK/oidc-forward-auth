@@ -42,8 +42,8 @@ func (root *HttpHandler) callbackHandler(w http.ResponseWriter, r *http.Request,
 	http.SetCookie(w, root.forwardAuth.ClearCSRFCookie(root.options))
 
 	http.SetCookie(w, root.forwardAuth.MakeAuthCookie(root.options, authResult))
-	if len(authResult.RefreshToken) > 0 { // Do we have an refresh token?
-		http.SetCookie(w, root.forwardAuth.MakeRefreshAuthCookie(root.options, authResult))
-	}
+	//if len(authResult.RefreshToken) > 0 { // Do we have an refresh token?
+	//	http.SetCookie(w, root.forwardAuth.MakeRefreshAuthCookie(root.options, authResult))
+	//}
 	http.Redirect(w, r, redirect, http.StatusTemporaryRedirect)
 }
