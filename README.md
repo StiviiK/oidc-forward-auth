@@ -14,8 +14,12 @@ Configuration is currently only via environmnet variables supported:
 
 
 # Usage
-The authenticated user is set in the `X-Forwarded-User` header.
-See more in the Example section.
+The authenticated user is set in the `X-Forwarded-User` header.    
+See more in the [Examples](#Examples) section.
+
+# Examples
+Following examples are currently avaiable:     
+    - [Google Authentication](./examples/google.md)
 
 # Future Features
 - Refresh Token support 
