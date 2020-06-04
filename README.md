@@ -1,6 +1,7 @@
-# OIDC Forward Auth for Traefik (v2+)
-An OIDC compliant traefik forward auth handler which follows the lifecycle of the token, also supports refreshing of tokens (WIP).
-Supports all OIDC compliant Identity Solutions, e.g. KeyCloak, GitHub, Google, ...
+# OIDC ForwardAuth for Traefik
+An OIDC compliant traefik forwardauth handler which follows the lifecycle of the token, also supports refreshing of tokens (WIP).
+Supports all OIDC compliant Identity Solutions, e.g. KeyCloak, GitHub, Google, ...   
+Code was also built with the Idea to be as simple and minimal as possible.
 
 # Configuration
 Configuration is currently only via environmnet variables supported:
@@ -18,13 +19,14 @@ The authenticated user is set in the `X-Forwarded-User` header.
 See more in the [Examples](#Examples) section.
 
 # Examples
-Following examples are currently avaiable:     
+Following examples are currently available:     
     - [Google Authentication](./examples/google.md)
 
 # Future Features
 - Refresh Token support 
-- Add option to only allow Users with verfied Mails    
-- Add Mail whitelist, also domain based    
+- Add option to only allow Users with verfied mails    
+- Add mail whitelist
+- _Your Idea here_    
 
 # Cookie Domains
 You can supply a comma separated list of cookie domains, if the host of the original request is a subdomain of any given cookie domain, the authentication cookie will set with the given domain.

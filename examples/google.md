@@ -20,7 +20,7 @@
     middlewares:
       keycloak:
       forwardAuth:
-        address: "http://traefik-forward-auth:4181" # Note: You need to use the internal DNS name (e.g. docker container nmae)
+        address: "http://traefik-forward-auth:4181" # Note: You need to use the internal DNS name (e.g. docker container name)
         trustForwardHeader: true
         authResponseHeaders: [ "X-Forwarded-User" ]
     ```
@@ -82,8 +82,7 @@
         - traefik.http.routers.keycloak-forward.tls.domains[0].main=*.yourdomain.tld
         - traefik.http.routers.keycloak-forward.tls.domains[0].sans=yourdomain.tld
         - traefik.http.routers.keycloak-forward.entrypoints=https
-        - traefik.http.routers.keycloak-forward.middlewares=rate-limit@file
         - traefik.http.services.keycloak-forward.loadbalancer.server.port=4181
         - traefik.http.routers.keycloak-forward.middlewares=keycloak@file # Note: The forwardauth handler itself requires the forwardauth middleware
     ````
-10. When you now browse to `whoami.yourdomain.tld` you will be redirected to the Google Auth and after successfully authentication you will be redirected back to the application.
+10. When you now browse to `whoami.yourdomain.tld` you will be redirected to the Google Auth and after a successfully authentication you will be redirected back to the application.

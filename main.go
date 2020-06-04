@@ -49,7 +49,7 @@ func main() {
 	// Configure an OpenID Connect aware OAuth2 client.
 	fw, err := forwardauth.Create(ctx, options)
 	if err != nil {
-		logrus.Errorf("failed to create forward auth client: %s", err)
+		logrus.Errorf("failed to create forwardauth client: %s", err)
 		logrus.Exit(1)
 	}
 
