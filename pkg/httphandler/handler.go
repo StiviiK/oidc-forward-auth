@@ -36,7 +36,7 @@ func (h *HttpHandler) Entrypoint() func(http.ResponseWriter, *http.Request) {
 			h.callbackHandler(w, r, uri)
 			return
 
-		case uri.Path == "/":
+		default:
 			h.rootHandler(w, r, uri)
 			return
 		}
