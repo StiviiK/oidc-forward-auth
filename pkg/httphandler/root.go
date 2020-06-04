@@ -15,8 +15,9 @@ import (
 // RootHandler returns a handler function which handles all requests to the root
 func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
 	logger := logrus.WithFields(logrus.Fields{
-		"SourceIP": r.Header.Get("X-Forwarded-For"),
-		"Path":     forwardedURI.Path,
+		"SourceIP":      r.Header.Get("X-Forwarded-For"),
+		"RequestTarget": root.forwardAuth.GetReturnUri(r),
+		"Path":          forwardedURI.Path,
 	})
 
 	claims, err := root.forwardAuth.IsAuthenticated(r.Context(), logger, w, r, root.options)
