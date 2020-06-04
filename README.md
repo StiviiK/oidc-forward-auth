@@ -12,6 +12,8 @@ Configuration is currently only via environmnet variables supported:
 |CLIENT_SECRET|string|OIDC Client Secret (required)|CLIENT_SECRET|
 |AUTH_DOMAIN|string|Central auth domain (required)|auth.example.com|
 |COOKIE_DOMAIN|string|Root domain(s) of protected host(s) (required)|example.com|
+|PORT|string|Port on which the Application is running on|4181|
+|REDIRECT_URL|string|Redirect URL|/auth/resp|
 
 
 # Usage

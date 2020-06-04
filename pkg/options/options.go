@@ -11,13 +11,13 @@ import (
 )
 
 type Options struct {
-	AuthDomain   string `env:"AUTH_DOMAIN"`
-	CookieDomain string `env:"COOKIE_DOMAIN"`
-	Port         int    `env:"PORT"`
 	Issuer       string `env:"ISSUER"`
 	ClientID     string `env:"CLIENT_ID"`
 	ClientSecret string `env:"CLIENT_SECRET"`
-	RedirectURL  string `env:"REDIRECT_URL"`
+	AuthDomain   string `env:"AUTH_DOMAIN"`
+	CookieDomain string `env:"COOKIE_DOMAIN"`
+	Port         int    `env:"PORT" envDefault:"4181"`
+	RedirectURL  string `env:"REDIRECT_URL" envDefault:"/auth/resp"`
 }
 
 // LoadOptions parses the environment vars and the options

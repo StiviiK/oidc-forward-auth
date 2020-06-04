@@ -66,10 +66,6 @@ func checkOptions(options *options.Options) error {
 		return errors.New("Required arg AUTH_DOMAIN is not set")
 	}
 
-	if options.Port == 0 {
-		return errors.New("Required arg BIND_ADRESS is not set")
-	}
-
 	if options.ClientID == "" {
 		return errors.New("Required arg CLIENT_ID is not set")
 	}
@@ -80,10 +76,6 @@ func checkOptions(options *options.Options) error {
 
 	if options.Issuer == "" {
 		return errors.New("Required arg ISSUER is not set")
-	}
-
-	if options.RedirectURL == "" {
-		return errors.New("Required arg REDIRECT_URL is not set")
 	}
 
 	return nil
