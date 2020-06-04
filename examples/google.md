@@ -15,7 +15,7 @@
     COOKIE_DOMAIN=yourdomain.tld
     ```
 8. Create the traefik forwardauth middleware (middlewares.forwardauth.toml):
-    ```toml
+    ```
     http:
     middlewares:
       keycloak:
@@ -25,7 +25,7 @@
         authResponseHeaders: [ "X-Forwarded-User" ]
     ```
 9. Final docker-compose:
-    ````
+    ````yaml
     traefik:
       image: traefik:latest
       networks:
