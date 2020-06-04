@@ -1,1 +1,3 @@
 # OIDC Forward Auth for Traefik (v2+)
+An OIDC compliant traefik forward auth handler which verfies the lifecycle of the tokens, also supports refreshing of tokens.
+Supports all OIDC compliant Identity Solutions, e.g. KeyCloak, GitHub, Google, ...
