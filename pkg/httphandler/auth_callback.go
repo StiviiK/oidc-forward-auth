@@ -12,7 +12,7 @@ import (
 )
 
 // CallbackHandler returns a handler function which handles the callback from oidc provider
-func (root *HttpHandler) callbackHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
+func (root *HttpHandler) authCallbackHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
 	logger := logrus.WithFields(logrus.Fields{
 		"SourceIP": r.Header.Get("X-Forwarded-For"),
 		"Path":     "/auth/resp",

@@ -34,15 +34,18 @@ func (root *HttpHandler) Entrypoint() func(http.ResponseWriter, *http.Request) {
 			return
 
 		case uri.Path == root.options.RedirectURL:
-			root.callbackHandler(w, r, uri)
+			root.authCallbackHandler(w, r, uri)
 			return
 
-		case uri.Path == root.options.LogoutUrl || uri.Path == fmt.Sprintf("%s/resp", root.options.LogoutUrl):
+		case uri.Path == root.options.LogoutUrl:
 			root.logoutHandler(w, r, uri)
 			return
 
+		case uri.Path == fmt.Sprintf("%s/resp", root.options.LogoutUrl):
+			return
+
 		default:
-			root.rootHandler(w, r, uri)
+			root.authRootHandler(w, r, uri)
 			return
 		}
 	}

@@ -14,7 +14,7 @@ import (
 )
 
 // RootHandler returns a handler function which handles all requests to the root
-func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
+func (root *HttpHandler) authRootHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
 	redirect := fmt.Sprintf("%s://%s%s", r.Header.Get("X-Forwarded-Proto"), r.Header.Get("X-Forwarded-Host"), r.Header.Get("X-Forwarded-Uri"))
 	logger := logrus.WithFields(logrus.Fields{
 		"SourceIP":      r.Header.Get("X-Forwarded-For"),
