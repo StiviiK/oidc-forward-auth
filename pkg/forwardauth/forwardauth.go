@@ -19,6 +19,12 @@ type ForwardAuth struct {
 	OidcProvider *oidc.Provider
 	OAuth2Config oauth2.Config
 	OidcVefifier *oidc.IDTokenVerifier
+
+	OidcProviderClaims *OidcProviderClaims
+}
+
+type OidcProviderClaims struct {
+	EndSessionURL string `json:"end_session_endpoint"`
 }
 
 // Claims represents the claims struct which we get from the identity provider
@@ -49,8 +55,16 @@ func Create(ctx context.Context, options *options.Options) (*ForwardAuth, error)
 		ClientID: options.ClientID,
 	})
 
+	providerClaims := OidcProviderClaims{}
+	if err = provider.Claims(&providerClaims); err != nil {
+		return nil, err
+	}
+
 	return &ForwardAuth{
-		OidcProvider: provider,
+		OidcProvider:       provider,
+		OidcVefifier:       verifier,
+		OidcProviderClaims: &providerClaims,
+
 		OAuth2Config: oauth2.Config{
 			ClientID:     options.ClientID,
 			ClientSecret: options.ClientSecret,
@@ -62,6 +76,5 @@ func Create(ctx context.Context, options *options.Options) (*ForwardAuth, error)
 			// "openid" is a required scope for OpenID Connect flows.
 			Scopes: []string{oidc.ScopeOpenID, "profile", "email"},
 		},
-		OidcVefifier: verifier,
 	}, nil
 }

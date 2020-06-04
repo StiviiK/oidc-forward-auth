@@ -5,6 +5,7 @@ This code is licensed under MIT license (see LICENSE for details)
 package httphandler
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -24,7 +25,7 @@ func Create(fw *forwardauth.ForwardAuth, options *options.Options) *HttpHandler 
 	}
 }
 
-func (h *HttpHandler) Entrypoint() func(http.ResponseWriter, *http.Request) {
+func (root *HttpHandler) Entrypoint() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		uri, err := url.Parse(r.Header.Get("X-Forwarded-Uri"))
 		switch {
@@ -32,12 +33,16 @@ func (h *HttpHandler) Entrypoint() func(http.ResponseWriter, *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 
-		case uri.Path == h.options.RedirectURL:
-			h.callbackHandler(w, r, uri)
+		case uri.Path == root.options.RedirectURL:
+			root.callbackHandler(w, r, uri)
+			return
+
+		case uri.Path == root.options.LogoutUrl || uri.Path == fmt.Sprintf("%s/resp", root.options.LogoutUrl):
+			root.logoutHandler(w, r, uri)
 			return
 
 		default:
-			h.rootHandler(w, r, uri)
+			root.rootHandler(w, r, uri)
 			return
 		}
 	}

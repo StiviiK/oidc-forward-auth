@@ -24,10 +24,10 @@ func getBaseCookie(options *options.Options) *http.Cookie {
 	}
 }
 
-func (fw *ForwardAuth) MakeCSRFCookie(w http.ResponseWriter, r *http.Request, options *options.Options, state string) *http.Cookie {
+func (fw *ForwardAuth) MakeCSRFCookie(w http.ResponseWriter, r *http.Request, options *options.Options, redirect string, state string) *http.Cookie {
 	cookie := getBaseCookie(options)
 	cookie.Name = "__auth_csrf"
-	cookie.Value = fmt.Sprintf("%s|%s", fw.GetReturnUri(r), state)
+	cookie.Value = fmt.Sprintf("%s|%s", redirect, state)
 	cookie.Expires = time.Now().Local().Add(time.Hour)
 
 	return cookie

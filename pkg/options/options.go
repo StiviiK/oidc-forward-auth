@@ -18,6 +18,7 @@ type Options struct {
 	CookieDomain string `env:"COOKIE_DOMAIN"`
 	Port         int    `env:"PORT" envDefault:"4181"`
 	RedirectURL  string `env:"REDIRECT_URL" envDefault:"/auth/resp"`
+	LogoutUrl    string `env:"LOGOUT_URL" envDefault:"/auth/logout"`
 }
 
 // LoadOptions parses the environment vars and the options

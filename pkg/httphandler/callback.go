@@ -15,7 +15,7 @@ import (
 func (root *HttpHandler) callbackHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
 	logger := logrus.WithFields(logrus.Fields{
 		"SourceIP": r.Header.Get("X-Forwarded-For"),
-		"Path":     forwardedURI.Path,
+		"Path":     "/auth/resp",
 	})
 
 	// check for the csrf cookie

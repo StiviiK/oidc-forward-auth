@@ -5,6 +5,7 @@ This code is licensed under MIT license (see LICENSE for details)
 package httphandler
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -14,10 +15,11 @@ import (
 
 // RootHandler returns a handler function which handles all requests to the root
 func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, forwardedURI *url.URL) {
+	redirect := fmt.Sprintf("%s://%s%s", r.Header.Get("X-Forwarded-Proto"), r.Header.Get("X-Forwarded-Host"), r.Header.Get("X-Forwarded-Uri"))
 	logger := logrus.WithFields(logrus.Fields{
 		"SourceIP":      r.Header.Get("X-Forwarded-For"),
-		"RequestTarget": root.forwardAuth.GetReturnUri(r),
-		"Path":          forwardedURI.Path,
+		"RequestTarget": redirect,
+		"Path":          "/",
 	})
 
 	claims, err := root.forwardAuth.IsAuthenticated(r.Context(), logger, w, r, root.options)
@@ -29,11 +31,11 @@ func (root *HttpHandler) rootHandler(w http.ResponseWriter, r *http.Request, for
 		//http.SetCookie(w, root.forwardAuth.ClearRefreshAuthCookie(root.options))
 
 		state := uuid.New().String()
-		http.SetCookie(w, root.forwardAuth.MakeCSRFCookie(w, r, root.options, state))
+		http.SetCookie(w, root.forwardAuth.MakeCSRFCookie(w, r, root.options, redirect, state))
 		http.Redirect(w, r, root.forwardAuth.OAuth2Config.AuthCodeURL(state), http.StatusTemporaryRedirect)
 		return
 	}
 
 	w.Header().Set("X-Forwarded-User", claims.Email)
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 }

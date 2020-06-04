@@ -7,6 +7,7 @@ package forwardauth
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 func (fw *ForwardAuth) GetReturnUri(r *http.Request) string {
@@ -15,4 +16,20 @@ func (fw *ForwardAuth) GetReturnUri(r *http.Request) string {
 	path := r.Header.Get("X-Forwarded-Uri")
 
 	return fmt.Sprintf("%s://%s%s", proto, host, path)
+}
+
+func (fw *ForwardAuth) GetLogoutUri(redirectURL string, state string) string {
+	logoutURL, err := url.Parse(fw.OidcProviderClaims.EndSessionURL)
+	if err != nil {
+		return ""
+	}
+	query := logoutURL.Query()
+	if redirectURL != "" {
+		query.Set("post_logout_redirect_uri", redirectURL)
+	}
+	if state != "" {
+		query.Set("state", state)
+	}
+	logoutURL.RawQuery = query.Encode()
+	return logoutURL.String()
 }
