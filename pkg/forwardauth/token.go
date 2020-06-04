@@ -6,7 +6,6 @@ package forwardauth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 
 	"golang.org/x/oauth2"
@@ -25,7 +24,7 @@ func (fw *ForwardAuth) VerifyToken(ctx context.Context, oauth2Token *oauth2.Toke
 		return result, err
 	}
 
-	result = AuthenticatationResult{rawIDToken, oauth2Token.RefreshToken, new(json.RawMessage)}
+	result = AuthenticatationResult{rawIDToken, oauth2Token.RefreshToken, new(Claims)}
 	if err := idToken.Claims(&result.IDTokenClaims); err != nil {
 		return result, err
 	}

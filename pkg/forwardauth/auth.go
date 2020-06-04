@@ -6,7 +6,6 @@ package forwardauth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -18,7 +17,7 @@ import (
 type AuthenticatationResult struct {
 	IDToken       string
 	RefreshToken  string
-	IDTokenClaims *json.RawMessage
+	IDTokenClaims *Claims
 }
 
 func (fw *ForwardAuth) HandleAuthentication(ctx context.Context, logger *logrus.Entry, state string, code string) (*AuthenticatationResult, error) {
@@ -88,13 +87,7 @@ func (fw *ForwardAuth) IsAuthenticated(context context.Context, logger *logrus.E
 			http.SetCookie(w, fw.MakeRefreshAuthCookie(options, result))
 		}
 
-		err = json.Unmarshal(*result.IDTokenClaims, &claims)
-		if err != nil {
-			logger.Error(err.Error())
-			return &claims, err
-		}
-
-		return &claims, nil
+		return result.IDTokenClaims, nil
 
 	case err != nil: // Other error
 		logger.Error(err.Error())
