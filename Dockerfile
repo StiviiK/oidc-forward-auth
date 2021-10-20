@@ -52,10 +52,10 @@ USER appuser:appuser
 ARG BUILD_DATE
 ARG VCS_REF
 
-# Good docker practice, plus we get microbadger badges
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.vcs-url="https://github.com/StiviiK/oidc-forward-auth.git" \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.schema-version="1.0"
+# Good docker practice
+LABEL org.opencontainers.image.created=$BUILD_DATE \
+      org.opencontainers.image.authors="StiviiK" \
+      org.opencontainers.image.source="https://github.com/StiviiK/oidc-forward-auth.git" \
+      org.opencontainers.image.revision=$VCS_REF
 
 ENTRYPOINT ["/go/bin/oidc-forward-auth"]
